@@ -1,0 +1,94 @@
+services:
+  # PostgreSQL Database (Optional - can use host PostgreSQL instead)
+  postgres:
+    image: postgres:16-alpine
+    container_name: query-agent-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: queryagent
+      POSTGRES_PASSWORD: secure_password_123
+      POSTGRES_DB: sampledb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    ports:
+      - "5433:5432" # External:Internal - Using 5433 to avoid conflict
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U queryagent -d sampledb" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - query-agent-network
+
+  # MCP Server - Connects to PostgreSQL and exposes MCP protocol
+  mcp-server:
+    build:
+      context: ./mcp-server
+      dockerfile: Dockerfile
+    container_name: query-agent-mcp-server
+    restart: unless-stopped
+    environment:
+      # PostgreSQL connection for MCP server
+      POSTGRES_HOST: host.docker.internal # Connect to host PostgreSQL
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pass@123
+      POSTGRES_DB: chinook # Default database to start with
+    depends_on:
+      - postgres
+    networks:
+      - query-agent-network
+    stdin_open: true # Keep stdin open for MCP communication
+    tty: true # Allocate pseudo-TTY
+
+  # Query Agent Application - Connects to MCP server
+  query-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: query-agent-app
+    restart: unless-stopped
+    environment:
+      # MCP Server connection (not direct PostgreSQL!)
+      MCP_SERVER_HOST: mcp-server
+      MCP_SERVER_PORT: 3000 # MCP server port (if using TCP)
+
+      # PostgreSQL info (for displaying current database)
+      POSTGRES_HOST: host.docker.internal
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pass@123
+      POSTGRES_DB: chinook
+
+      # Google Gemini API Key - REPLACE WITH YOUR ACTUAL KEY
+      GEMINI_API_KEY: AIzaSyD2tivZ4j-qaS5dIhjQRtfcirUf13iy-Pk
+
+      # Application Settings
+      APP_HOST: 0.0.0.0
+      APP_PORT: 8000
+      DEBUG: "True"
+
+      # MCP Server Configuration (for stdio communication)
+      MCP_SERVER_COMMAND: docker
+      MCP_SERVER_ARGS: "exec,-i,query-agent-mcp-server,npx,@modelcontextprotocol/server-postgres"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mcp-server
+    networks:
+      - query-agent-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  query-agent-network:
+    driver: bridge

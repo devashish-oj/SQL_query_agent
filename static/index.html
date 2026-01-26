@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PostgreSQL Query Agent</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>🤖 PostgreSQL Query Agent</h1>
+            <p class="subtitle">Generate SQL queries from natural language using AI</p>
+            <div class="status-container">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">Connecting...</span>
+            </div>
+        </header>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Sidebar: Schema Browser -->
+            <aside>
+                <div class="card">
+                    <h2 class="card-title">Database Schema</h2>
+                    <div class="schema-browser" id="schemaBrowser">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <span>Loading schema...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Query History -->
+                <div class="card" style="margin-top: 1.5rem;">
+                    <h2 class="card-title">Query History</h2>
+                    <div class="history-list" id="historyList">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📝</div>
+                            <p>No queries yet</p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main>
+                <!-- Query Input -->
+                <div class="card query-input-section">
+                    <h2 class="card-title">Ask a Question</h2>
+                    <div class="input-group">
+                        <textarea 
+                            id="queryInput" 
+                            placeholder="Example: Show me all users who registered in the last 30 days&#10;Example: Insert a new product with name 'Widget' and price 29.99&#10;Example: Delete all orders that are older than 1 year"
+                        ></textarea>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn btn-primary" id="generateBtn" onclick="generateQuery()">
+                            <span>✨</span>
+                            <span>Generate Query</span>
+                        </button>
+                        <button class="btn btn-secondary" id="clearBtn" onclick="clearOutput()">
+                            <span>🗑️</span>
+                            <span>Clear</span>
+                        </button>
+                        <button class="btn btn-secondary" id="refreshSchemaBtn" onclick="refreshSchema()">
+                            <span>🔄</span>
+                            <span>Refresh Schema</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Query Output -->
+                <div id="outputContainer"></div>
+            </main>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
