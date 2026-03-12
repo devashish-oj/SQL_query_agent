@@ -304,10 +304,10 @@ This project is open source and available under the MIT License.
 ## 🙏 Acknowledgments
 
 - Built with [FastAPI](https://fastapi.tiangolo.com/)
-- AI powered by [Google Gemini](https://ai.google.dev/)
+- AI powered by Grok and Gemini
 - Database access via [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
 - Container deployment with [Docker](https://www.docker.com/)
-
+- Used Antigravity to take help while writing the code
 ---
 
 **Made with ❤️ for safe database querying**
